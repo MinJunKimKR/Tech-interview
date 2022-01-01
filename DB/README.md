@@ -43,3 +43,24 @@ select를 시행할때 사용하는 join, where, orderby 절 구문에 사용되
     Full scan시에 B-Tree는 결국 모든 노드를 확인해야하지만, B+tree는 리프노드에
     모든 value가 있기에, 리프노드만 순회하면된다.
     즉, DB에 좀더 적합한 구조이다.
+
+# Connection Pool
+
+## Connection Pool이란?
+
+    DB와의 커넥션 객체를 미리 할당을 해서 Pool에 넣어둔다. 이후 DB연결 요청이 들어왔을때 Pool의 있는 Connection을 사용하고, 작업이 끝나면 반납하는방식. Connection을 잇는 작업을 중복으로 처리되지 않도록해서 성능을 올리는 방법.
+
+## Connection Pool을 왜 쓰는가?
+
+    Connection Pool을 사용할경우, 연결이 되어있는 Connection이 이미 Pool에 있기 때문에, Connection을 매번 지어줄 필요없다.
+    따라서, 기존의 작업을 할때마다 conection을 맺고 끊는 과정을 줄여서 성능을 향상시킬수있다
+
+## 실시간 통신과 Pool사용시의 차이가 무엇인가요?
+
+    실시간 통신은 DB에 작업을 할떄마다
+    1. DB connection을 만든다.
+    2. DB의 작업을 처리한다
+    3. DB와 Connection을 해제한다.
+    의 과정을 거치지만, Pool을 사용하면 1번과 3번의 과정이 생략이되기에, 많은 request처리에서 성능이 더 좋다.
+
+    하지만, Connection도 객체기 때문에, 너무 많이 만들어 두게되면 메모리를 더 많이 소모해서 오히려 성능이 떨어지기에 주의해야한다.
