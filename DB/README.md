@@ -82,3 +82,66 @@ select를 시행할때 사용하는 join, where, orderby 절 구문에 사용되
     C - Consistency(일관성): 트랜잭션이 성공적으로 완료되면 일관적인 DB상태를 유지하는것을 말합니다. (ex : int가 string이 되지않는다)
     I - Isolation(고립성):트랜잭션 실행중에는 다른 트랜잭션이 끼어들지 못합니다. (ex: 송금 트랜잭션중 삭제 트랜잭션이 끼어들지 못한다.)
     D - Durability(영구성): 트랜잭션이 실행뒤에 commit이된 사항은 영구적으로 반영되는것을 말합니다.
+
+# 샤딩
+
+## 샤딩이란?
+
+    관계형 데이터베이스에서 대량의 데이터를 처리하기 위해서 데이터를 파티셔닝하는 기술이다. (partitioning->분할함) 
+
+    간단하게 예를 들면, 전 세계의 고객 데이터를 저장하는 대형 데이터베이스를 분산한다고 할때, 
+
+    미국 고객의 경우는 샤드A, 아시아 고객의 경우는 샤드B, 유럽 고객의 경우는 샤드C로 분할해서 저장할수 있다.
+
+## 샤딩하기전에 고려해야하는점은?
+
+1. 좀더 고스펙의 컴퓨터를 사용한다.
+
+2. Read(Select) 명령이 많다면 Cache나 Database Replication을 적용한다.
+
+3. Table의 일부 Column만 사용한다면 수직 분할(Vertically Partitioning)을 사용한다 / Cold & Hot data를 사용한다.
+
+## 샤딩의 단점은?
+
+    프로그래밍적, 운영적인 복잡도가 높아진다.
+    즉, 샤딩을 시작하기 전에 샤딩을 피하거나 지연시킬 수 있는 방법을 찾는게 우선이다.
+
+# 리플리케이션
+
+## 리플리케이션이란?
+
+- 두 개의 이상의 DBMS 시스템을 `Mater / Slave`로 나눠서 동일한 데이터를 저장하는 방식이다.
+
+## **방식**
+
+![https://nesoy.github.io/assets/posts/20180216/2.png](https://nesoy.github.io/assets/posts/20180216/2.png)
+
+`Master DBMS`에는 데이터의 수정사항을 반영만하고 Replication을 하여 `Slave DBMS`에 실제 데이터를 복사한다.
+
+## 리플리케이션하는 방법은?
+
+**로그기반 복제(Binary Log)**
+
+- Statement Based : `SQL문장`을 복사하여 진행
+  - issue : SQL에 따라 결과가 달라지는 경우(Timestamp, UUID, …)
+- Row Based : SQL에 따라 변경된 `Row 라인`만 기록하는 방식
+  - issue : 데이터가 많이 변경된 경우 데이터 커질 수 밖에 없다.
+- Mixed : 기본적으로 Statement Based로 진행하면서 필요에 따라 Row Based를 사용한다.
+
+## 리플리케이션의 장점은?
+
+**Replication 장점.**
+
+![https://nesoy.github.io/assets/posts/20180216/3.png](https://nesoy.github.io/assets/posts/20180216/3.png)
+
+언급했던 것처럼 Query의 대부분은 `Select`가 차지하고 있다.
+
+이 부분의 부하를 낮추기 위해 많은 `Slave Database`를 생성하게 된다면 `Read(Select)` 성능 향상 효과를 얻을 수 있다.
+
+`Master Database` 영향없이 로그를 분석할 수 있다.
+
+## hot/cold data란?
+
+- Hot data: 자주 사용되는 데이터
+
+- Cold data: 드물게 사용되거나 아예 사용되지 않는 데이터
