@@ -1,8 +1,6 @@
-# 프로그래밍
+# Javascript
 
-## Javascript
-
-**[Reference list]**
+**Reference list**
 
 - https://velog.io/@wkahd01/프론트엔드-면접-문제-은행-HTML-질문-답변
 
@@ -152,13 +150,13 @@ arrow function는 스스로의 this와 argument를 가지지 않는다.
 
 즉, 화살표 arrow function 내부의 this는 상위 스코프의 this를 그대로 사용이 가능하다.
 
-## Node.js
+# Node.js
 
-### 정의
+## 정의
 
 - 크롬 V8엔진으로 빌드된 자바스크립트 런타임 환경이다.
 
-### 철학
+## 철학
 
 1. 경량 코어
 
@@ -196,6 +194,8 @@ arrow function는 스스로의 this와 argument를 가지지 않는다.
 
    예를 들어, 싱글톤(singleton)이나 데코레이터(decorator)와 같은 상당 수의 전통적인 디자인 패턴은 사소하고 완벽하지 않은 구현이라도 간단히 사용될 수 있으며, 복잡하지 않고 실용적인 접근법(대부분의 경우)이 원칙적이고 완벽한 디자인보다 더 선호된다는 것을 보게 될 것입니다.
 
+# Node.js framework
+
 ## Fastify
 
 ### 왜 Nest를 사용했는지 (장,단점)
@@ -206,7 +206,20 @@ arrow function는 스스로의 this와 argument를 가지지 않는다.
 
 ## Express
 
+# API
+
+**Reference list**
+
+- Hasura: https://hasura.io/
+- Architecture of a high performance GraphQL to SQL engine : https://hasura.io/blog/architecture-of-a-high-performance-graphql-to-sql-server-58d9944b8a87/
+- https://hasura.io/blog/how-hasura-works/
+
 ## GraphQL
+
+reference list
+
+- https://chanyeong.com/blog/post/53
+- https://yeolceo.tistory.com/114
 
 ### GraphQL의 정의(철학)을 말씀해주세요
 
@@ -218,7 +231,75 @@ arrow function는 스스로의 this와 argument를 가지지 않는다.
 
 ### GraphQL API와 REST API의 차이점에대해 말씀해주세요
 
-### N+1 문제 해결법
+### N+1문제란? 그리고 그 해결방법은?
+
+- query를 작성할때 서브쿼리의 값을 가져오기 위해서는 1개의 쿼리 그리고 각각 연결되어져있는 서브 쿼리를 다 가져와야 하기 때문에 1번의 요청이 N개를 가져온다 해서 1+N입니다.
+
+  즉, 내부 객체를 얻기 위해 외부 객체에서 N개의 쿼리를 만드는 경우를 말한다.
+
+- 해결은 데이터 로더를 사용해서 N+1문제를 해결한다
+
+### 데이터 로더란?
+
+DataLoader는 Facebook에서 개발했으며 일괄 처리 및 캐싱을 통해 데이터베이스 또는 웹 서비스와 같은 다양한 원격 데이터 소스 요청에 대한 비용을 줄이는 기능을 한다. 즉, 성능 최적화를 위한 도구이다.
+
+DataLoader는 크게 2가지 특징을 가지고 있다.
+
+1. batch
+   n+1에 대한 문제를 해결해 주는 것이 batch이다.
+
+   GraphQL에서 Sub-Query를 통해 데이터를 호출할 때의 프로세스입니다.
+
+   API 호출 시 Query를 통해 데이터를 반환합니다. Sub-Query는 반환되는 데이터중 하나를 key로 하여 새로운 쿼리를 호출하고 기존 key의 위치에 Sub-Query의 데이터를 반환합니다.
+
+   이를 데이터 로더는 load 함수를 통해 **Sub-Query에서 사용할 key를 배열에 모아서 데이터 로더 함수에 전달합니다.** key값을 이용해 얻은 **객체를 조건에 맞게 반환해줍니다.**
+
+   조건은 2가지이며 key배열과 동일한 길이의 배열을 반환하는 것과 기존의 key와 알맞은 위치 즉 , 동일한 index에 key로 얻은 결과인 객체를 반환해야 합니다.
+
+2. cache
+
+   데이터 로더를 사용해 호출한 함수 별로 캐시가 생성됩니다.
+
+   자체적으로 CacheMap을 가지고 있습니다.
+
+   캐시가 한번 생성되면 동일한 호출이 반복될 경우 DB에 접속하지 않고 메모리에 있는 값을 반환하여 리소스 낭비를 줄입니다.
+
+   단 호출하는 **API의 매개변수가 자주 변경된다면 많은 Cache를 계속해서 맵핑할 수 있기 때문에 이 부분도 낭비**가 될 수 있습니다.
+
+   잘 고려하여 사용하거나 캐시 생성 기능을 사용하지 않는 것이 방법이 될 수 있습니다.
+
+## Hasura
+
+### 철학이 어떤것인가요?
+
+어플리케이션을 전과 다를정도로 빠르게 만드는것.
+보통 data에 접근해야하는 api를 만드는데 많은 시간이 걸리는데, 이것을 효과적으로 줄이는것이 미션이다.
+
+### Hasura 란?
+
+Hasura는 실시간 실시간 GraphQL API 엔진입니다
+
+> Hasura is the instant realtime GraphQL APIs engine
+
+Postgresql뿐만 아니라 RestAPI, GraphqlAPI서버등을 연결하여 통합적인 realtime GraphQL API를 제공합니다.
+
+### 왜 썼고 이득이 있었나요?
+
+- 굉장히 빠른속도를 낸다. benchmark기준으로 Prisma나 postgraphile보다 훨씬 빠르다.
+- 빠르게 적용해서 프론트앤드에 많은 자율성을 줄수가 있다.
+- 통합 graphql 엔진이기에 확장성이 뛰어나다.
+- auth나 cron job등을 console을 사용해서 파워풀하게 사용이 가능하다.
+- 이로인해서 MVP로 단 2달이란 시간만에 런칭이 가능했다.
+
+### N+1 문제 해결
+
+Hasura는 JIT로 컴파일되어서 graphql을 sql로 만들어준다.
+이떄, Hasura는 grapgql의 서브 쿼리를 sql의 join을 사용하여 sql문으로 만들게 되는데,
+JSON aggregation functions을 사용해서 최적화를 진행한다.
+
+### Pagnation 구현은 어떻게 하는가
+
+- Hasura에서 limit, offset이라는 operator를 사용할수 있는데, 이것을 사용하면 몇개를, 몇번쨰부터 데이터를 가져올수 있게 한다.
 
 ## Rest API
 
@@ -245,22 +326,6 @@ REST(Representational State Transfer)
 - 단점
   - API의 변경이 생길경우 backend에서 리소스를 변경해주기전까지 프론트앤드쪽에서 병목현상이 생긴다.
     - 하지만 이 이경우 swagger와 같은 API명세를 먼저 제공해서 Front-end에서 Mock-server와 같은 방법으로 동시 개발하여 문제를 해결할수있다
-
-## Hasura
-
-### Hasura 란?
-
-### N+1 문제 해결
-
-### 어떤것인지 말씀해 주세요
-
-### 철학이 어떤것인가요?
-
-### 왜 썼고 이득이 있었나요?
-
-### Pagnation 구현은 어떻게 하는가
-
-- Hasura에서 limit, offset이라는 operator를 사용할수 있는데, 이것을 사용하면 몇개를, 몇번쨰부터 데이터를 가져올수 있게 한다.
 
 # 개념
 
@@ -321,10 +386,3 @@ REST(Representational State Transfer)
 
 - 의존성 역전
 - 고수준 모듈은 저수준 모듈의 구현에 의존해서는 안 된다. 저수준 모듈이 고수준 모듈에서 정의한 추상 타입에 의존해야 한다.
-
-````
-
-```
-
-```
-````

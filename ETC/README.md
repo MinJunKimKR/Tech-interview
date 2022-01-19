@@ -2,8 +2,6 @@
 
 ## Nest
 
-## Hasura
-
 ## Postgresql
 
 ### Mysql과의 차이점
