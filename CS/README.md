@@ -24,6 +24,95 @@
 검색된 웹 페이지 데이터는 또 다시 HTTP 프로토콜을 사용하여 HTTP 응답 메시지를 생성하고 TCP 프로토콜을 사용하여 인터넷을 거쳐 원래 컴퓨터로 전송된다.
 도착한 HTTP 응답 메시지는 HTTP 프로토콜을 사용하여 웹 페이지 데이터로 변환되어 웹 브라우저에 의해 출력되어 사용자가 볼 수 있게 된다. -->
 
+## CORS
+
+Reference list
+
+https://evan-moon.github.io/2020/05/21/about-cors/
+
+### CORS란
+
+Cross Origin Resource Sharing의 줄임말 입니다.
+서로 다른 출처로의 리소스요청을 제한하는것에 대한 정책이다.
+
+따라서, Scheme, host, port가 동일하면 같은 출처라고 본다.
+
+만약 우리가 **CORS 정책을 위반하는 리소스 요청**을 하더라도 해당 서버가 같은 출처에서 보낸 요청만 받겠다는 로직을 가지고 있는 경우가 아니라면 **서버는 정상적으로 응답**을 하고, 이후 **브라우저가 이 응답을 분석해서 CORS 정책 위반**이라고 판단되면 그 **응답을 사용하지 않고 그냥 버리는 순서**인 것이다.
+
+CORS는 **브라우저의 구현 스펙**에 포함되는 정책이기 때문에, 브라우저를 통하지 않고 **서버 간 통신을 할 때는 이 정책이 적용되지 않는다.**
+
+### CORS 동작법
+
+다른 출처의 리소스를 요청할 때는 HTTP 프로토콜을 사용하여 요청을 보내게 되는데, 이때 **브라우저는 요청 헤더에 `Origin`이라는 필드에 요청을 보내는 출처**를 함께 담아보낸다.
+
+이후 서버가 이 요청에 대한 응답을 할 때 응답 헤더의 `Access-Control-Allow-Origin`이라는 값에
+“**이 리소스를 접근하는 것이 허용된 출처**”를 내려준다.
+
+이후 응답을 받은 브라우저는 자신이 보냈던 요청의 `Origin`과 서버가 보내준 응답의 `Access-Control-Allow-Origin`을 비교해본 후 이 응답이 유효한 응답인지 아닌지를 결정한다.
+
+### CORS 정책 위반
+
+1. 브라우저는 서버에게 fetch 요청을 보내기전에 option으로 예비 요청을 먼저 보낸다.
+   ```
+   OPTIONS https://evanmoon.tistory.com/rss
+   ...
+   Access-Control-Request-Headers: content-type
+   Access-Control-Request-Method: GET
+   ...
+   Origin: https://evan-moon.github.io
+   ...
+   ```
+   어떤 헤더를 사용할지, 어떤 요청을 보낼것인지 사전에 미리 서버측에 알려주고 있다.
+2. 서버는 이 예비 요청에 대한 응답으로 현재 자신이 어떤 것들을 허용하고, 어떤 것들을 금지하고 있는지에 대한 정보를 응답 헤더에 담아서 브라우저에게 다시 보내주게 된다.
+
+   ```
+   OPTIONS https://evanmoon.tistory.com/rss 200 OK
+
+   Access-Control-Allow-Origin: https://evanmoon.tistory.com
+   ```
+
+   `Access-Control-Allow-Origin`를 보면 서버는 이 리소스에 접근가능한 출처는 오직 `https://evanmoon.tistory.com` 뿐이라고 브라우저에 알려주는것이다.
+
+3. 이 경우에 `https://evan-moon.github.io`에서 요청을 보낸것이기 때문에 CORS정책 위반이 일어나게된다.
+
+중요한 것은 예비 요청의 성공/실패 여부가 아니라 “응답 헤더에 유효한 Access-Control-Allow-Origin 값이 존재하는가”이다. 만약 예비 요청이 실패해서 200이 아닌 상태 코드가 내려오더라도 헤더에 저 값이 제대로 들어가있다면 CORS 정책 위반이 아니라는 의미이다.
+
+### CORS 해결방법
+
+## Request의 종류
+
+- pre-flight(프리플라이트)
+
+  브라우저가 본 요청을 보내기 전에 보내는 `예비 요청을 Preflight`라고 부르는 것이며, 이 예비 요청에는 `HTTP 메소드 중 OPTIONS 메소드가 사용`된다.
+
+  예비 요청의 역할은 본 요청을 보내기 전에 브라우저 스스로 이 요청을 보내는 것이 안전한지 확인하는 것이다.
+  ![](https://evan-moon.github.io/static/c86699252752391939dc68f8f9a860bf/21b4d/cors-preflight.png)
+
+  1. 예를들어 우리가 자바스크립트의 fetch API를 사용하여 브라우저에게 리소스를 받아오라는 명령을 내린다.
+  2. 브라우저는 서버에게 fetch 요청을 보내기전에 option으로 예비 요청을 먼저 보낸다.
+  3. 서버는 이 예비 요청에 대한 응답으로 현재 자신이 어떤 것들을 허용하고, 어떤 것들을 금지하고 있는지에 대한 정보를 응답 헤더에 담아서 브라우저에게 다시 보내주게 된다.
+  4. 브라우저는 자신이 보낸 예비요청과 서버가 응답에 담아준 허용정책을 비교후, 이 요청을 보내는것이 안전하다 판단이 되면, 앤드포인트로 다시 본 요청을 보내게된다.
+  5. 이후 서버가 이 본 요청에 응답하면 브라우저는 최종적으로 이 응답데이터를 자바스크립트에 넘기게 된다.
+
+- simple
+
+  단순 요청은 예비 요청을 보내지 않고 바로 서버에게 본 요청부터 때려박은 후, 서버가 이에 대한 응답의 헤더에 Access-Control-Allow-Origin과 같은 값을 보내주면 그때 브라우저가 CORS 정책 위반 여부를 검사하는 방식이다.
+
+  즉, 프리플라이트와 단순 요청 시나리오는 전반적인 로직 자체는 같되, 예비 요청의 존재 유무만 다르다.
+  ![](https://evan-moon.github.io/static/d8ed6519e305c807c687032ff61240f8/21b4d/simple-request.png)
+
+  다만, 이 경우 아래의 3개의 조건을 충족시켜야한다.
+
+  1.  요청의 메소드는 GET, HEAD, POST 중 하나여야 한다.
+  2.  Accept, Accept-Language, Content-Language, Content-Type, DPR, Downlink, Save-Data, Viewport-Width, Width를 제외한 헤더를 사용하면 안된다.
+  3.  만약 Content-Type를 사용하는 경우에는 application/x-www-form-urlencoded, multipart/form-data, text/plain만 허용된다.
+
+  당장 사용자 인증에 사용되는 **Authorization 헤더 조차 저 조건에는 포함되지 않는다.**
+
+  대부분의 **HTTP API는 text/xml이나 application/json 컨텐츠 타입**을 가지도록 설계되기 때문에 사실 상 이 조건들을 모두 만족시키는 상황을 만들기는 그렇게 쉽지 않은 것이 현실이다.
+
+## HTTP 상태코드
+
 # Data Structure
 
 ## 배열과 링크드 리스트의 차이점에 대해서 설명해 주세요.
